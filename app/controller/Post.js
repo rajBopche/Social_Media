@@ -1,5 +1,6 @@
 const Post = require('../model/Post')
 const User = require('../model/User')
+const Comment = require('../model/Comment')
 const { createError } = require('../../util')
 
 const userExist = async (username) => User.findOne({ username })
@@ -29,6 +30,38 @@ module.exports.createPost = async (req, res) => {
     } catch (error) {
         res.status(error.errorCode || 400).json({ message: error.message })
     }
+}
+
+module.exports.getPost = async (req, res) => {
+
+    try {
+        const postId = req.params.postId
+        const postPromise =  Post.
+            findOne({ _id: postId })
+            .select('-_id -__v')
+            .then(post => [post, null])
+            .catch(err => [null, err])
+
+        const commentPromise =  Comment
+            .find({ postId: postId })// find all records in DB under Comment table for the records with matching id
+            .select('-postId -_id -__v')// we don't require this field in result so we are screening it out
+            .limit(10)// bring only 10 records
+            .sort({ createdAt: -1 }) // we want to sort as per {createdAt} criteria that too in descending order(latest first) so -1
+            .then(comments => [comments, null]) // when promise is resolved 
+            .catch(err => [null, err]) // when promise is rejected
+
+        const [[post, postError], [comments, commentError]] = await Promise.all([postPromise, commentPromise])
+
+        if (postError) createError(422, "Something went wrong, " + postError.message)
+        if (!post || !comments) createError(400, "Something went wrong")
+        if (commentError) createError(400, "Something went wrong, " + commentError.message)
+
+        res.status(200).json({ post: post, comments: comments }) //if everything goes rite send back post and comments
+    } catch (error) {
+        res.status(error.errorCode || 400).json({ message: error.message })
+    }
+
+
 }
 
 module.exports.getPosts = async (req, res) => {
