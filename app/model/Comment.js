@@ -1,15 +1,16 @@
 const mongoose = require('mongoose')
+const Post = require('./Post')
 
 const CommentSchema = mongoose.Schema({
-    comment:{
-        type:String,
-        require:true
+    comment: {
+        type: String,
+        require: true
     },
-    postId:{
-        type:mongoose.Types.ObjectId,
-        ref:'Posts',
+    postId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'Posts',
         index: true
-    },by: {
+    }, by: {
         name: {
             type: String,
             require: true
@@ -19,10 +20,17 @@ const CommentSchema = mongoose.Schema({
             require: true
         }
     },
-    createdAt:{
+    createdAt: {
         type: Date,
         default: Date.now
     }
 })
 
-module.exports = mongoose.model("Comments",CommentSchema)
+CommentSchema.post('save', async function (next) { //DB middle ware, everytime a comment is saved increment 
+    //comment count on that post 
+    await Post.findOneAndUpdate({ _id: this.postId }, { $inc: { noOfComments: 1 } })
+})
+
+
+
+module.exports = mongoose.model("Comments", CommentSchema)
