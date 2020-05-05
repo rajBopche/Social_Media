@@ -36,13 +36,13 @@ module.exports.getPost = async (req, res) => {
 
     try {
         const postId = req.params.postId
-        const postPromise =  Post.
+        const postPromise = Post.
             findOne({ _id: postId })
             .select('-_id -__v')
             .then(post => [post, null])
             .catch(err => [null, err])
 
-        const commentPromise =  Comment
+        const commentPromise = Comment
             .find({ postId: postId })// find all records in DB under Comment table for the records with matching id
             .select('-postId -_id -__v')// we don't require this field in result so we are screening it out
             .limit(10)// bring only 10 records
@@ -79,4 +79,29 @@ module.exports.getPosts = async (req, res) => {
     } catch (error) {
         res.status(error.errorCode || 400).json({ message: error.message })
     }
+}
+
+module.exports.deletePost = async (req, res) => {
+    try {
+        const postId = req.params.postId
+        const [postErr, post] = await Post
+            .findOne({ _id: postId })
+            .select("-__v -_id")
+            .then(post => [null, post])
+            .catch(err => [err, null])
+
+        if (postErr) createError(422, "Something went wrong " + postErr.message)
+        if (!post) createError(404, "Post doesn't exist by that id")
+        if (res.user.username != post.by.username) createError(401, "You don't have the authority to delete the post")
+        const [deleted,err] = await Post
+            .deleteOne({ _id: postId })
+            .then(post => [post,null])
+            .catch(err => [null,err])
+        if (err) createError(422, err.message)
+        else res.status(200).json({ message: "Post Successfully Deleted" })
+
+    } catch (error) {
+        res.status(error.errorCode || 400).json({ message: error.message })
+    }
+
 }
