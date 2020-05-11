@@ -22,7 +22,7 @@ module.exports.register = async (req, res) => {
         const token = await generateToken(savedUser)
         res.status(201).json({ token: token })
     } catch (error) {
-        res.status(error.errorCode).json({ error: error.message })
+        res.status(error.errorCode||400).json({ error: error.message })
     }
 }
 
@@ -38,6 +38,6 @@ module.exports.login = async (req, res) => {
         const token = await generateToken(user)
         res.status(200).json({token:token})
     } catch (error) {
-        res.status(error.errorCode).json({ error: error.message })
+        res.status(error.errorCode||400).json({ error: error.message })
     }
 }
