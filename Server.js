@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const db = require('./db')
 const UserController = require('./app/route/Auth')
@@ -11,4 +12,4 @@ app.use('/users', UserController) //middle ware stuff, if url has /users route t
 app.use('/posts',PostController)  //middle ware stuff, if url has /users route them to PostController
 
 db()
-app.listen(3000)
+app.listen(process.env.PORT_NUMBER)

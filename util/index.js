@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const SALT = "secret"
+const SALT = process.env.JWT_SALT_KEY
 
 module.exports.createError = (errorCode, message) => { throw { errorCode: errorCode, message: message } }
 
