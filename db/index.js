@@ -1,7 +1,3 @@
-
-
-const DB_URL = 'mongodb+srv://Raj:User12345%23@cluster0-nzasa.mongodb.net/test?retryWrites=true&w=majority'
-
 const mongoose = require('mongoose');
 
 const loadModels = ()=>{
